@@ -1,0 +1,21 @@
+plugins {
+    id 'java-gradle-plugin'
+    id "application"
+    id "java"
+}
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+}
+
+
+ext {
+    javaMainClass = "main.Main"
+}
+
+application {
+    mainClassName = javaMainClass
+}
