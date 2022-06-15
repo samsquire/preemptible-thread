@@ -8,8 +8,7 @@ public class Scheduler {
         public void preempt() {
             for (LightWeightThread thread : scheduled.keySet()) {
                 scheduled.put(thread, false);
-                for (String loop : thread.getLoops()) {
-
+                for (int loop = 0 ; loop < thread.getLoops(); loop++) {
                     thread.preempt(loop);
                 }
             }
@@ -43,23 +42,23 @@ public class Scheduler {
     }
 
     public interface Preemptible {
-        void registerLoop(String name, Integer defaultValue, Integer limit);
-        int increment(String name);
-        boolean isPreempted(String name);
-        int getLimit(String name);
-        int getValue(String name);
-        void preempt(String name);
-        Set<String> getLoops();
+        void registerLoop(int name, int defaultValue, int limit);
+        int increment(int name);
+        boolean isPreempted(int name);
+        int getLimit(int name);
+        int getValue(int name);
+        void preempt(int id);
+        int getLoops();
     }
 
     public static abstract class LightWeightThread implements Preemptible {
         public int kernelThreadId;
         public int threadId;
         public KernelThread parent;
-        Map<String, Integer> values = new HashMap<>();
-        Map<String, Integer> limits = new HashMap<>();
-        Map<String, Boolean> preempted = new HashMap<>();
-        Map<String, Integer> remembered = new HashMap<>();
+        int[] values = new int[1];
+        int[] limits = new int[1];
+        boolean[] preempted = new boolean[1];
+        int[] remembered = new int[1];
         public LightWeightThread(int kernelThreadId, int threadId, KernelThread parent) {
             this.kernelThreadId = kernelThreadId;
             this.threadId = threadId;
@@ -69,50 +68,50 @@ public class Scheduler {
 
         }
 
-        public void registerLoop(String name, Integer defaultValue, Integer limit) {
-            if (remembered.containsKey(name) && remembered.get(name) < limit) {
-                values.put(name, remembered.get(name));
-                limits.put(name, limit);
+        public void registerLoop(int name, int defaultValue, int limit) {
+            if (preempted.length > name && remembered[name] < limit) {
+                values[name] = remembered[name];
+                limits[name] = limit;
             } else {
-                values.put(name, defaultValue);
-                limits.put(name, limit);
+                values[name] = defaultValue;
+                limits[name] = limit;
             }
-            preempted.put(name, false);
+            preempted[name] = false;
 
         }
 
-        public int increment(String name) {
-            int value = values.get(name);
+        public int increment(int name) {
+            int value = values[name];
             value++;
-            values.put(name, value);
+            values[name] = value;
             return value;
         }
 
-        public boolean isPreempted(String name) {
-            return preempted.get(name);
+        public boolean isPreempted(int name) {
+            return preempted[name];
         }
 
-        public int getLimit(String name) {
-            return limits.get(name);
+        public int getLimit(int name) {
+            return limits[name];
         }
 
-        public int getValue(String name) {
-            return values.get(name);
+        public int getValue(int name) {
+            return values[name];
         }
 
-        public int initialVar(String name, int value) {
-            values.put(name, value);
+        public int initialVar(int name, int value) {
+            values[name] = value;
             return value;
         }
 
-        public void preempt(String name) {
-            remembered.put(name, values.get(name));
-            preempted.put(name, true);
-            values.put(name, limits.get(name));
+        public void preempt(int id) {
+            remembered[id] = values[id];
+            preempted[id] = true;
+            values[id] = limits[id];
         }
 
-        public Set<String> getLoops() {
-            return values.keySet();
+        public int getLoops() {
+            return values.length;
         }
     }
 
@@ -127,13 +126,13 @@ public class Scheduler {
 
                             while (this.parent.isScheduled(this)) {
                                 System.out.println(String.format("%d %d", this.kernelThreadId, this.threadId));
-                                registerLoop("i", 0, 10000000);
-                                for (initialVar("i", 0); getValue("i") < getLimit("i"); increment("i")) {
-                                    Math.sqrt(getValue("i"));
+                                registerLoop(0, 0, 10000000);
+                                for (initialVar(0, 0); getValue(0) < getLimit(0); increment(0)) {
+                                    Math.sqrt(getValue(0));
                                 }
 
-                                if (isPreempted("i")) {
-                                    System.out.println(String.format("%d %d: %s was preempted !%d < %d", this.kernelThreadId, this.threadId, "i", values.get("i"), limits.get("i")));
+                                if (isPreempted(0)) {
+                                    System.out.println(String.format("%d %d: %d was preempted !%d < %d", this.kernelThreadId, this.threadId, 0, values[0], limits[0]));
                                 }
                             }
 
