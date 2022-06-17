@@ -63,6 +63,7 @@ do {
       
       // printf("Preempting kernel thread %d user thread %d\n", i, j);
       for (int loop = 0; loop < timer_thread->all_threads[i].user_threads[j].num_loops; loop++) {
+        timer_thread->all_threads[i].user_threads[j].remembered[loop] = timer_thread->all_threads[i].user_threads[j].value[loop];
         timer_thread->all_threads[i].user_threads[j].value[loop] = timer_thread->all_threads[i].user_threads[j].limit[loop];
       }
       
@@ -113,6 +114,7 @@ do {
          }
         tinfo->user_threads[i].preempted = 1;
         tinfo->user_threads[i].user_function(&tinfo->user_threads[i]);
+         previous = i;
       } 
     }
 
@@ -142,6 +144,7 @@ lightweight_thread_function(struct lightweight_thread* m)
         sqrt(m->value[0]);
       }
       printf("Kernel thread %d User thread %d ran\n", m->kernel_thread_num, m->thread_num);
+      
     }
     
     
