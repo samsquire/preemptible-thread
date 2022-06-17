@@ -31,6 +31,7 @@ struct lightweight_thread {
      char     *argv_string;      /* From command-line argument */
     int lightweight_threads_num;
   struct lightweight_thread *user_threads;
+  volatile int running;
  };
 
 struct timer_thread {
@@ -39,7 +40,7 @@ struct timer_thread {
   int num_threads;
   int lightweight_threads_num;
   int delay;
-  int running;
+  volatile int running;
 };
 
 static void *
@@ -48,7 +49,7 @@ timer_thread_start(void *arg) {
   struct timer_thread *timer_thread = arg;
   int msec = 0, trigger = timer_thread->delay; /* 10ms */
 clock_t before = clock();
-while (timer_thread->running == 1) {
+while (timer_thread->running == 1 && iterations < 100000) {
 do {
   for (int i = 0 ; i < timer_thread->num_threads; i++) {
     for (int j = 0 ; j < timer_thread->all_threads[i].lightweight_threads_num; j++) {
@@ -73,7 +74,7 @@ do {
   clock_t difference = clock() - before;
   msec = difference * 1000 / CLOCKS_PER_SEC;
   iterations++;
-} while ( msec < trigger );
+} while ( msec < trigger && iterations < 100000 );
 
 // printf("Time taken %d seconds %d milliseconds (%d iterations)\n",
 //  msec/1000, msec%1000, iterations);
@@ -102,7 +103,7 @@ do {
        
        }
 
-    while (1) {
+    while (tinfo->running == 1) {
       for (int i = 0 ; i < tinfo->lightweight_threads_num; i++) {
         tinfo->user_threads[i].preempted = 0;
         
@@ -230,9 +231,12 @@ struct lightweight_thread *lightweight_threads =
      struct thread_info *tinfo = calloc(num_threads, sizeof(*tinfo));
      if (tinfo == NULL)
          handle_error("calloc");
-
+    for (int tnum = 0 ; tnum < num_threads; tnum++) {
+      tinfo[tnum].running = 1;
+    }
    struct timer_thread *timer_info = calloc(1, sizeof(*timer_info));
      timer_info->running = 1;
+      timer_info->delay = 10;
      timer_info->num_threads = num_threads;
       
      if (timer_info == NULL)
@@ -273,9 +277,15 @@ struct lightweight_thread *lightweight_threads =
 
      /* Now join with each thread, and display its returned value. */
 
+   s = pthread_join(timer_info->thread_id, &timer_result);
+         if (s != 0)
+             handle_error_en(s, "pthread_join");
+
+         printf("Joined timer thread");
    
 
      for (int tnum = 0; tnum < num_threads; tnum++) {
+          tinfo[tnum].running = 0;
          s = pthread_join(tinfo[tnum].thread_id, &res);
          if (s != 0)
              handle_error_en(s, "pthread_join");
@@ -283,15 +293,18 @@ struct lightweight_thread *lightweight_threads =
          printf("Joined with thread %d; returned value was %s\n",
                  tinfo[tnum].thread_num, (char *) res);
          free(res);      /* Free memory allocated by thread */
+       for (int user_thread_num = 0 ; user_thread_num < num_threads; user_thread_num++) {
+         
+           free(tinfo[tnum].user_threads[user_thread_num].remembered);
+           free(tinfo[tnum].user_threads[user_thread_num].value);
+         free(tinfo[tnum].user_threads[user_thread_num].limit);
+         
+       }
        free(tinfo[tnum].user_threads);
      }
    
    
-   s = pthread_join(timer_info->thread_id, &timer_result);
-         if (s != 0)
-             handle_error_en(s, "pthread_join");
-
-         printf("Joined timer thread");
+   
      free(timer_info);
      free(tinfo);
      exit(EXIT_SUCCESS);
