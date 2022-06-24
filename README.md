@@ -10,3 +10,6 @@ These code examples show preempting a hot loop in a green thread in Rust, C and 
 
 Rather than introducing an if statement into every iteration of the loop that slows down the loop, we update the loop invariants to cancel the loop. This approach can be used to create cancellable APIs.
 
+# preemtible-thread-evented.c
+
+This is preeemptible threads with threads for IO events. Normally you would use libev or libuv but I thought I could combine my preemptible green threads with IO scheduled on IO threads. 
