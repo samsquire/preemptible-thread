@@ -295,13 +295,13 @@ do {
 //  msec/1000, msec%1000, iterations);
   }
   // stop all lightweight functions
-  for (int i = 0 ; i < timer_thread->num_threads; i++) {
+  /*for (int i = 0 ; i < timer_thread->num_threads; i++) {
     for (int j = 0 ; j < timer_thread->all_threads[i].lightweight_threads_num; j++) {
       // printf("Preempting kernel thread %d user thread %d\n", i, j);
       timer_thread->all_threads[i].user_threads[j].preempted = 0;
       
     }
-  }
+  }*/
    
   return 0;
 }
@@ -328,7 +328,7 @@ thread_start(void *arg)
        }
 	
     while (tinfo->running == 1) {
-	 printf("Running kernel thread...\n");
+	 // printf("Running kernel thread...\n");
       for (int i = 0 ; i < tinfo->lightweight_threads_num; i++) {
         tinfo->user_threads[i].preempted = 0;
         
@@ -339,7 +339,7 @@ thread_start(void *arg)
            tinfo->user_threads[previous].preempted = 0;
          }
         tinfo->user_threads[i].preempted = 1;
-        tinfo->user_threads[i].user_function(&tinfo, &tinfo->user_threads[i]);
+        tinfo->user_threads[i].user_function(tinfo, &tinfo->user_threads[i]);
         previous = i;
       } 
     }
@@ -412,9 +412,9 @@ lightweight_thread_function(struct thread_info* t, struct lightweight_thread* m)
     
     while (t->running == 1 && m->preempted == 1) {
       register_loop(0, 0, m, 10000000);
-	  printf("Lightweight function running...%d\n", m->preempted);	
+	  // printf("Lightweight function running...%d\n", m->preempted);	
       for (; m->value[0] < m->limit[0]; m->value[0]++) {
-      	printf("Doing work\n");  
+      	// printf("Doing work\n");  
         sqrt(m->value[0]);
         char *buffer = (char*)malloc(1024 * sizeof(char));
         memset(buffer, '\0', 1024 * sizeof(char));
@@ -465,6 +465,7 @@ struct lightweight_thread *lightweight_threads =
            handle_error("calloc lightweight threads");
   for (int i = 0 ; i < num_threads ; i++) {
     lightweight_threads[i].kernel_thread_num = kernel_thread_num;
+    lightweight_threads[i].preempted = 1;
     lightweight_threads[i].thread_num = i;
     lightweight_threads[i].num_loops = 1;
     lightweight_threads[i].all_producers = tinfo; // TODO &tinfo
@@ -644,7 +645,6 @@ struct io_thread *io_thread_info = calloc(io_threads, sizeof(struct io_thread));
              handle_error_en(s, "pthread_join");
 
 	 printf("Joined timer thread\n");
-	 printf("NUMBER THREADS %d", number_threads);
 	 io_ringbuffer->stopped = 1;
    
 	 printf("Stopping user threads\n");
@@ -652,10 +652,8 @@ struct io_thread *io_thread_info = calloc(io_threads, sizeof(struct io_thread));
 		tinfo[i].running = 0;
 		
 		for (int j = 0 ; j < tinfo[i].lightweight_threads_num; j++) {
-			printf("user thread is %d\n", tinfo[i].user_threads[j].preempted);
 			tinfo[i].user_threads[j].preempted = 0; // stop the lightweight thread	
 			printf("Stopping lightweight thread\n");
-			printf("Number of loops %d\n", tinfo[i].user_threads[j].num_loops);
 			for (int loop = 0 ; loop < tinfo[i].user_threads[j].num_loops; loop++) {
 				printf("Stopping loop\n");
 				tinfo[i].user_threads[j].value[loop] = tinfo[i].user_threads[j].limit[loop];
@@ -679,7 +677,6 @@ struct io_thread *io_thread_info = calloc(io_threads, sizeof(struct io_thread));
 		  // free(tinfo[tnum].argv_string);
 		
        for (int user_thread_num = 0 ; user_thread_num < number_threads; user_thread_num++) {
- 		 printf("Freeing remembered value limit\n"); 
          free(tinfo[tnum].user_threads[user_thread_num].remembered);
          free(tinfo[tnum].user_threads[user_thread_num].value);
          free(tinfo[tnum].user_threads[user_thread_num].limit);
