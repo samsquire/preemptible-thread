@@ -264,7 +264,7 @@ timer_thread_start(void *arg) {
   struct timer_thread *timer_thread = arg;
   int msec = 0, trigger = timer_thread->delay; /* 10ms */
 clock_t before = clock();
-while (timer_thread->running == 1 && iterations < 1000000) {
+while (timer_thread->running == 1 && iterations < 100000) {
 do {
   for (int i = 0 ; i < timer_thread->num_threads; i++) {
     for (int j = 0 ; j < timer_thread->all_threads[i].lightweight_threads_num; j++) {
@@ -289,7 +289,7 @@ do {
   clock_t difference = clock() - before;
   msec = difference * 1000 / CLOCKS_PER_SEC;
   iterations++;
-} while ( msec < trigger && iterations < 1000000 );
+} while ( msec < trigger && iterations < 100000 );
 
 // printf("Time taken %d seconds %d milliseconds (%d iterations)\n",
 //  msec/1000, msec%1000, iterations);
@@ -308,7 +308,7 @@ do {
 
  /* Thread start function: display address near top of our stack,
     and return upper-cased copy of argv_string. */
-
+// def thread_start
 static void *
 thread_start(void *arg)
  {
@@ -338,7 +338,7 @@ thread_start(void *arg)
          if (previous != -1) {
            tinfo->user_threads[previous].preempted = 0;
          }
-        tinfo->user_threads[i].preempted = 1;
+        tinfo->user_threads[i].preempted = tinfo->running;
         tinfo->user_threads[i].user_function(tinfo, &tinfo->user_threads[i]);
         previous = i;
       } 
@@ -410,7 +410,7 @@ void*
 lightweight_thread_function(struct thread_info* t, struct lightweight_thread* m)
 {
     
-    while (t->running == 1 && m->preempted == 1) {
+    while (m->preempted == 1) {
       register_loop(0, 0, m, 10000000);
 	  // printf("Lightweight function running...%d\n", m->preempted);	
       for (; m->value[0] < m->limit[0]; m->value[0]++) {
