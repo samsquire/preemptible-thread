@@ -264,7 +264,7 @@ timer_thread_start(void *arg) {
   struct timer_thread *timer_thread = arg;
   int msec = 0, trigger = timer_thread->delay; /* 10ms */
 clock_t before = clock();
-while (timer_thread->running == 1 && iterations < 100000) {
+while (timer_thread->running == 1 && iterations < 1000000) {
 do {
   for (int i = 0 ; i < timer_thread->num_threads; i++) {
     for (int j = 0 ; j < timer_thread->all_threads[i].lightweight_threads_num; j++) {
@@ -289,7 +289,7 @@ do {
   clock_t difference = clock() - before;
   msec = difference * 1000 / CLOCKS_PER_SEC;
   iterations++;
-} while ( msec < trigger && iterations < 100000 );
+} while ( msec < trigger && iterations < 1000000 );
 
 // printf("Time taken %d seconds %d milliseconds (%d iterations)\n",
 //  msec/1000, msec%1000, iterations);
@@ -435,7 +435,7 @@ lightweight_thread_function(struct thread_info* t, struct lightweight_thread* m)
         operations->buffer_size = 1024;
         // printf("Opening file\n");
 		
-        operations->fd = open("/home/sam/preemptible-thread/data", O_RDONLY);
+        operations->fd = open("data", O_RDONLY);
        	if (operations->fd == NULL || operations->fd == -1 || operations->fd == 0) {
           // handle_error("could not open file for reading");
 		 // printf("Freeing operations");
