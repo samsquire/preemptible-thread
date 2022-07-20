@@ -1,5 +1,7 @@
 # preemptible-thread
 
+[This idea comes from inspiration from Stephen from this Stackoverflow question : how to preempt a thread from userspace](https://stackoverflow.com/questions/72625285/preempt-a-hot-loop-thread-from-user-space)
+
 How to preempt threads in user space?
 
 You set the looping variable to the limit! You can therefore implement an M:N scheduler with this pattern. I've written this multiplexer in Java, C and Rust.
