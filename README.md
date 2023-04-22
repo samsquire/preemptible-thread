@@ -6,7 +6,9 @@ How to preempt threads in user space?
 
 You set the looping variable to the limit! You can therefore implement an M:N scheduler with this pattern. I've written this multiplexer in Java, C and Rust.
 
-This is a userspace thread scheduler. It switches between green threads very fast, every 10 milliseconds.
+This is a userspace thread scheduler. It switches between green threads very fast as frequently as you want it to.
+
+This scheduler cannot preempt arbitrary code, it requires no cooperation at descheduling time - only you register the memory locations of the loop variable.
 
 These code examples show preempting a hot loop in a green thread in Rust, C and Java.
 
