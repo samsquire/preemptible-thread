@@ -90,7 +90,7 @@ class ConcurrentLoop {
       }
     }
 
-    if (allMax) {
+    if (!shifting && allMax) {
       int current = 0;
       for (int i = 0 ; i < this.indexes.size(); i++) {
         this.indexes.set(i, current++);
@@ -99,21 +99,28 @@ class ConcurrentLoop {
     }
 
     if (shifting) {
-     System.out.println("SHIFTING");
+	  System.out.println(this.indexes);
       for (int i = 0 ; i < this.indexes.size(); i++) {
         int previousIndex = i - 1;
-        
-        int nextIndex = i + 1;
-        if (i == 0) { previousIndex = this.collections.get(i).size() - 1; }
-        if (i == this.indexes.size() - 1) { nextIndex = 0 }
-        String previousValue = this.collections.get(previousIndex).get(this.indexes.get(previousIndex));
-        String nextValue = this.collections.get(nextIndex).get(this.indexes.get(nextIndex));
-        
-        this.indexes.set(previousIndex, this.indexes.get(i));
-        this.indexes.set(i, this.indexes.get(nextIndex));
+       	boolean overwritePrevious = false; 
+		int previousValue;
+		int nextValue;
+        if (i == 0) { overwritePrevious = true;  previousIndex = this.indexes.size() - 1; previousValue = this.collections.get(i).size(); nextValue = this.indexes.get(i + 1); }
+        else if (i == this.indexes.size() - 1) { overwritePrevious = false; previousValue = this.indexes.get(previousIndex); nextValue = (this.indexes.get(i - 1) + 1) % this.collections.get(i - 1).size(); }
+		else {
+			overwritePrevious = false;
+			previousValue = this.indexes.get(previousIndex);
+			nextValue = this.indexes.get(i + 1);
+		}
+		if (overwritePrevious) {
+			// this.indexes.set(previousIndex, previousValue);
+		}
+        this.indexes.set(i, nextValue);
+		System.out.println(this.indexes);
         
       }
-    }
+	  System.out.println(this.indexes);
+    } else {
     
     for (int i = 0 ; i < this.indexes.size() ; i++) {
         
@@ -140,6 +147,7 @@ class ConcurrentLoop {
         
       
     }
+	
     for (int i = 0 ; i < this.indexes.size() ; i++) {
       
       if (this.tallies.get(i) > 0 && this.tallyCurrent.get(i) >= tallies.get(i)) {
@@ -158,10 +166,12 @@ class ConcurrentLoop {
       }
       
     }
+	}
     if (!preservePosition) {
       position = (position+1) % this.indexes.size();
     }
     positionRaw = positionRaw + 1;
+	
     return this.func.run(items);
   }
   
