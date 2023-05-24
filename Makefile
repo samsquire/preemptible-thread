@@ -5,3 +5,6 @@ main: preemptible-thread-evented.c
 
 main2: preemptible-thread-evented2.c 
 	gcc -g -march=native -pthread preemptible-thread-evented2.c -lm -o main2 
+
+uring: uring.c
+	gcc -O2 -Wall -Wextra -Wconversion -g3 -fsanitize=undefined -o uring uring.c -luring -Iliburing/src
