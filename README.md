@@ -24,6 +24,8 @@ I should probably change IO callbacks to be enqueued onto the RingBuffer as they
 
 # LICENCE
 
+With the exception of the ringbuffer code in -evented.c
+
 BSD Zero Clause License
 
 Copyright (C) 2023 by Samuel Michael Squire sam@samsquire.com
