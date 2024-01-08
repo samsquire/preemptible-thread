@@ -8,11 +8,21 @@ You set the looping variable to the limit! You can therefore implement an M:N sc
 
 This is a userspace thread scheduler. It switches between green threads very fast as frequently as you want it to.
 
+Please note, I would use nanosleep nowadays in C as I do in my [other C projects projects](https://github.com/samsquire/assembly).
+
 This scheduler cannot preempt arbitrary code, it requires no cooperation at descheduling time - only you register the memory locations of the loop variable.
 
 These code examples show preempting a hot loop in a green thread in Rust, C and Java.
 
 Rather than introducing an if statement into every iteration of the loop that slows down the loop, we update the loop invariants to cancel the loop. This approach can be used to create cancellable APIs.
+
+# api
+
+register_loop takes place of your loop definition by providing an original value and a limit and puts it into a struct visible to other threads.
+
+# Warning
+
+This takes avantage of a data race. But you might be fine with it if your algorithm uses a cached value of the loop iterating variable and not checks it otherwise it could change halfway through the loop.
 
 # preemptible-thread-evented.c
 
