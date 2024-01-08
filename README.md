@@ -4,7 +4,7 @@
 
 How to preempt threads in user space?
 
-You set the looping variable to the limit! You can therefore implement an M:N scheduler with this pattern. I've written this multiplexer in Java, C and Rust.
+You set the looping variable to the limit! You can therefore implement an M:N scheduler with this pattern. I've written this multiplexer in Java, C and Rust. See preemtible-thread-evented.c and preemtible-thread.rs and the Java Main.java and Scheduler.java.
 
 This is a userspace thread scheduler. It switches between green threads very fast as frequently as you want it to.
 
